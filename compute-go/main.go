@@ -14,7 +14,7 @@ import (
 var httpLambda *httpadapter.HandlerAdapter
 
 func init() {
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", authMiddleware(handler))
 
 	httpLambda = httpadapter.New(http.DefaultServeMux)
 }
