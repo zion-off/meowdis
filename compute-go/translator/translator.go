@@ -41,6 +41,60 @@ func Translate(cmd []string) (Translation, error) {
 		return translateMGet(cmd[1:])
 	case "MSET":
 		return translateMSet(cmd[1:])
+	case "EXPIRE":
+		return translateExpire(cmd[1:])
+	case "EXPIREAT":
+		return translateExpireAt(cmd[1:])
+	case "TTL":
+		return translateTTL(cmd[1:])
+	case "PTTL":
+		return translatePTTL(cmd[1:])
+	case "PERSIST":
+		return translatePersist(cmd[1:])
+	case "HGET":
+		return translateHGet(cmd[1:])
+	case "HSET":
+		return translateHSet(cmd[1:])
+	case "HDEL":
+		return translateHDel(cmd[1:])
+	case "HGETALL":
+		return translateHGetAll(cmd[1:])
+	case "HEXISTS":
+		return translateHExists(cmd[1:])
+	case "HKEYS":
+		return translateHKeys(cmd[1:])
+	case "HVALS":
+		return translateHVals(cmd[1:])
+	case "LPUSH":
+		return translateLPush(cmd[1:])
+	case "RPUSH":
+		return translateRPush(cmd[1:])
+	case "LPOP":
+		return translateLPop(cmd[1:])
+	case "RPOP":
+		return translateRPop(cmd[1:])
+	case "LRANGE":
+		return translateLRange(cmd[1:])
+	case "LLEN":
+		return translateLLen(cmd[1:])
+	case "SADD":
+		return translateSAdd(cmd[1:])
+	case "SREM":
+		return translateSRem(cmd[1:])
+	case "SMEMBERS":
+		return translateSMembers(cmd[1:])
+	case "SISMEMBER":
+		return translateSIsMember(cmd[1:])
+	case "SCARD":
+		return translateSCard(cmd[1:])
+	case "PING":
+		return translatePing(cmd[1:])
+	case "DBSIZE":
+		return translateDBSize(cmd[1:])
+	case "FLUSHDB":
+		return translateFlushDB(cmd[1:])
+	case "KEYS":
+		return translateKeys(cmd[1:])
 	default:
 		return Translation{}, errUnknownCommand(cmd[0])
 	}
