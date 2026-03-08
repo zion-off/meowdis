@@ -26,7 +26,7 @@ func translateLPush(args []string) (Translation, error) {
 
 	for _, value := range values {
 		stmts = append(stmts, Statement{
-			SQL:    "INSERT INTO lists (key, index, value) SELECT ?, COALESCE(MIN(index), 1.0) - 1.0, ? FROM lists WHERE key = ?",
+			SQL:    `INSERT INTO lists (key, "index", value) SELECT ?, COALESCE(MIN("index"), 1.0) - 1.0, ? FROM lists WHERE key = ?`,
 			Params: []any{key, value, key},
 		})
 	}
@@ -76,7 +76,7 @@ func translateRPush(args []string) (Translation, error) {
 
 	for _, value := range values {
 		stmts = append(stmts, Statement{
-			SQL:    "INSERT INTO lists (key, index, value) SELECT ?, COALESCE(MAX(index), 0.0) + 1.0, ? FROM lists WHERE key = ?",
+			SQL:    `INSERT INTO lists (key, "index", value) SELECT ?, COALESCE(MAX("index"), 0.0) + 1.0, ? FROM lists WHERE key = ?`,
 			Params: []any{key, value, key},
 		})
 	}
@@ -148,14 +148,14 @@ func translatePop(args []string, cmd string, left bool) (Translation, error) {
 		if !left {
 			order = "DESC"
 		}
-		popSQL = "DELETE FROM lists WHERE key = ? AND index IN (SELECT index FROM lists WHERE key = ? ORDER BY index " + order + " LIMIT ?) RETURNING index, value"
+		popSQL = `DELETE FROM lists WHERE key = ? AND "index" IN (SELECT "index" FROM lists WHERE key = ? ORDER BY "index" ` + order + ` LIMIT ?) RETURNING "index", value`
 		popParams = []any{key, key, count}
 	} else {
 		if left {
-			popSQL = "DELETE FROM lists WHERE key = ? AND index = (SELECT MIN(index) FROM lists WHERE key = ?) RETURNING index, value"
+			popSQL = `DELETE FROM lists WHERE key = ? AND "index" = (SELECT MIN("index") FROM lists WHERE key = ?) RETURNING "index", value`
 			popParams = []any{key, key}
 		} else {
-			popSQL = "DELETE FROM lists WHERE key = ? AND index = (SELECT MAX(index) FROM lists WHERE key = ?) RETURNING index, value"
+			popSQL = `DELETE FROM lists WHERE key = ? AND "index" = (SELECT MAX("index") FROM lists WHERE key = ?) RETURNING "index", value`
 			popParams = []any{key, key}
 		}
 	}
@@ -242,7 +242,7 @@ func translateLRange(args []string) (Translation, error) {
 			Params: []any{key},
 		},
 		{
-			SQL:    "SELECT value FROM lists WHERE key = ? ORDER BY index ASC",
+			SQL:    `SELECT value FROM lists WHERE key = ? ORDER BY "index" ASC`,
 			Params: []any{key},
 		},
 	}
