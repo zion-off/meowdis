@@ -1,0 +1,53 @@
+name: Deploy compute-go
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'compute-go/**'
+      - '.github/workflows/deploy-compute-go.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: compute-go/go.mod
+
+      - name: Build
+        run: |
+          cd compute-go
+          GOOS=linux GOARCH=amd64 go build -o bootstrap .
+          zip meowdis-compute-go.zip bootstrap
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-southeast-2
+
+      - name: Deploy
+        run: |
+          aws lambda update-function-code \
+            --function-name meowdis-compute-go \
+            --zip-file fileb://compute-go/meowdis-compute-go.zip
+          aws lambda wait function-updated \
+            --function-name meowdis-compute-go
+
+      - name: Set environment variables
+        env:
+          AUTH_TOKEN: ${{ secrets.AWS_COMPUTE_GO_AUTH_TOKEN }}
+          STORAGE_ENDPOINT: ${{ secrets.CLOUDFLARE_DURABLE_OBJECT_ENDPOINT }}
+          STORAGE_TOKEN: ${{ secrets.CLOUDFLARE_DURABLE_OBJECT_SECRET }}
+        run: |
+          aws lambda update-function-configuration \
+            --function-name meowdis-compute-go \
+            --environment "Variables={AUTH_TOKEN=$AUTH_TOKEN,STORAGE_ENDPOINT=$STORAGE_ENDPOINT,STORAGE_TOKEN=$STORAGE_TOKEN}"
