@@ -426,17 +426,7 @@ func parseSetOptions(args []string) (setOptions, error) {
 }
 
 func hasWrongType(results [][]map[string]any, index int) bool {
-	if index < 0 || index >= len(results) {
-		return false
-	}
-	if len(results[index]) == 0 {
-		return false
-	}
-	value, ok := results[index][0]["type"]
-	if !ok || value == nil {
-		return false
-	}
-	return strings.ToLower(fmt.Sprint(value)) != "string"
+	return wrongTypeFor(results, index, "string")
 }
 
 func rowString(row map[string]any, key string) string {
