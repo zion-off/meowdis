@@ -1,0 +1,47 @@
+name: Deploy durable-object
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'durable-object/**'
+      - '.github/workflows/deploy-durable-object.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.16.1'
+
+      - name: Install dependencies
+        run: |
+          cd durable-object
+          pnpm install --frozen-lockfile
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd durable-object
+          pnpm run deploy
+
+      - name: Set worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          STORAGE_SECRET: ${{ secrets.CLOUDFLARE_DURABLE_OBJECT_SECRET }}
+        run: |
+          cd durable-object
+          echo "$STORAGE_SECRET" | pnpm wrangler secret put STORAGE_SECRET
