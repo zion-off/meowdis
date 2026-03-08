@@ -11,15 +11,15 @@ import (
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 )
 
-var httpLambda *httpadapter.HandlerAdapter
+var httpLambda *httpadapter.HandlerAdapterV2
 
 func init() {
 	http.HandleFunc("/", authMiddleware(handler))
 
-	httpLambda = httpadapter.New(http.DefaultServeMux)
+	httpLambda = httpadapter.NewV2(http.DefaultServeMux)
 }
 
-func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	return httpLambda.ProxyWithContext(ctx, req)
 }
 
