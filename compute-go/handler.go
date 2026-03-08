@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"compute/translator"
 )
@@ -24,6 +25,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	var single []string
 	if err := json.Unmarshal(body, &single); err == nil {
+		if len(single) == 1 && strings.ToUpper(single[0]) == "INIT" {
+			_, err := storagePost(map[string]any{"init": true})
+			if err != nil {
+				json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
+				return
+			}
+			json.NewEncoder(w).Encode(map[string]any{"result": "OK"})
+			return
+		}
+
 		translation, err := translator.Translate(single)
 		if err != nil {
 			json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
