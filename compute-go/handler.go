@@ -24,39 +24,66 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	var single []string
 	if err := json.Unmarshal(body, &single); err == nil {
-		statements, err := translator.Translate(single)
+		translation, err := translator.Translate(single)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
 			return
 		}
-		results, err := execStatements(statements)
+		results, err := execStatements(translation.Statements)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
 			return
 		}
-		json.NewEncoder(w).Encode(map[string]any{"result": results})
+		mapped, err := translation.MapResult(results)
+		if err != nil {
+			json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]any{"result": mapped})
 		return
 	}
 
 	var pipeline [][]string
 	if err := json.Unmarshal(body, &pipeline); err == nil {
-		var batches [][]translator.Statement
-		for _, cmd := range pipeline {
-			statements, err := translator.Translate(cmd)
+		results := make([]any, len(pipeline))
+		translations := make([]translator.Translation, 0, len(pipeline))
+		indexMap := make([]int, 0, len(pipeline))
+		for i, cmd := range pipeline {
+			translation, err := translator.Translate(cmd)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				results[i] = map[string]any{"error": err.Error()}
+				continue
+			}
+			translations = append(translations, translation)
+			indexMap = append(indexMap, i)
+		}
+
+		var pipelineResults [][][]map[string]any
+		if len(translations) > 0 {
+			batches := make([][]translator.Statement, len(translations))
+			for i, translation := range translations {
+				batches[i] = translation.Statements
+			}
+			var err error
+			pipelineResults, err = execPipeline(batches)
+			if err != nil {
+				json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
 				return
 			}
-			batches = append(batches, statements)
 		}
-		results, err := execPipeline(batches)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+
+		for i, translation := range translations {
+			mapped, err := translation.MapResult(pipelineResults[i])
+			if err != nil {
+				results[indexMap[i]] = map[string]any{"error": err.Error()}
+				continue
+			}
+			results[indexMap[i]] = mapped
 		}
+
 		json.NewEncoder(w).Encode(map[string]any{"result": results})
 		return
 	}
 
-	http.Error(w, "ERR invalid request body", http.StatusBadRequest)
+	json.NewEncoder(w).Encode(map[string]any{"error": "ERR invalid request body"})
 }

@@ -6,21 +6,43 @@ import (
 	"strings"
 )
 
-
 type Statement struct {
 	SQL    string
 	Params []any
 }
 
-func Translate(cmd []string) ([]Statement, error) {
+type Translation struct {
+	Statements []Statement
+	MapResult  func(results [][]map[string]any) (any, error)
+}
+
+func Translate(cmd []string) (Translation, error) {
 	if len(cmd) == 0 {
-		return nil, errors.New("ERR empty command")
+		return Translation{}, errors.New("ERR empty command")
 	}
 	switch strings.ToUpper(cmd[0]) {
 	case "GET":
 		return translateGet(cmd[1:])
+	case "SET":
+		return translateSet(cmd[1:])
+	case "DEL":
+		return translateDel(cmd[1:])
+	case "EXISTS":
+		return translateExists(cmd[1:])
+	case "INCR":
+		return translateIncr(cmd[1:])
+	case "INCRBY":
+		return translateIncrBy(cmd[1:])
+	case "DECR":
+		return translateDecr(cmd[1:])
+	case "DECRBY":
+		return translateDecrBy(cmd[1:])
+	case "MGET":
+		return translateMGet(cmd[1:])
+	case "MSET":
+		return translateMSet(cmd[1:])
 	default:
-		return nil, errUnknownCommand(cmd[0])
+		return Translation{}, errUnknownCommand(cmd[0])
 	}
 }
 
