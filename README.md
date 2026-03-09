@@ -45,7 +45,7 @@ objects. drop-in replacement for upstash redis.
 set `AUTH_TOKEN` to a random secret string when prompted — generate one at
 [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/)
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=meowdis)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis/tree/main/meowdis)
 
 > **tip:** for lower latency, set a [location hint](https://developers.cloudflare.com/durable-objects/reference/data-location/#provide-a-location-hint) in `meowdis/src/index.ts` before deploying to pin the durable object to a region close to your users:
 >
@@ -121,7 +121,7 @@ curl https://meowdis.example.workers.dev \
 
 **1.** deploy the storage layer
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=durable-object)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis/tree/main/durable-object)
 
 | variable         | description                                                                                               |
 | ---------------- | --------------------------------------------------------------------------------------------------------- |
@@ -131,7 +131,7 @@ curl https://meowdis.example.workers.dev \
 
 **option a — cloudflare worker** (compute-node)
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=compute-node)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis/tree/main/compute-node)
 
 | variable     | description                                                                                               |
 | ------------ | --------------------------------------------------------------------------------------------------------- |
