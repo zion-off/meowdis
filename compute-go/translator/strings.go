@@ -267,7 +267,7 @@ func translateIncrByDelta(args []string, delta int64, cmd string) (Translation, 
 			Params: []any{key},
 		},
 		{
-			SQL:    "UPDATE strings SET value = CAST(value AS INTEGER) + ? WHERE key = ? RETURNING value",
+			SQL:    "UPDATE strings SET value = CAST(CAST(value AS INTEGER) + ? AS INTEGER) WHERE key = ? RETURNING value",
 			Params: []any{delta, key},
 		},
 	}

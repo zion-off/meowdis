@@ -280,10 +280,7 @@ function translateIncrByDelta(args: string[], delta: number, cmd: string): Trans
         { sql: "INSERT OR IGNORE INTO keys (key, type) VALUES (?, 'string')", params: [key] },
         { sql: "INSERT OR IGNORE INTO strings (key, value) VALUES (?, '0')", params: [key] },
         { sql: "SELECT value FROM strings WHERE key = ?", params: [key] },
-        {
-            sql: "UPDATE strings SET value = CAST(value AS INTEGER) + ? WHERE key = ? RETURNING value",
-            params: [delta, key],
-        },
+        { sql: "UPDATE strings SET value = CAST(CAST(value AS INTEGER) + ? AS INTEGER) WHERE key = ? RETURNING value", params: [delta, key] },
     ];
 
     return {
