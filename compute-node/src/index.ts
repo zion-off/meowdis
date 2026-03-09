@@ -33,6 +33,16 @@ function errorMessage(err: unknown): string {
     return String(err);
 }
 
+function encodeResult(v: unknown): unknown {
+    if (typeof v === "string") {
+        return btoa(unescape(encodeURIComponent(v)));
+    }
+    if (Array.isArray(v)) {
+        return v.map(encodeResult);
+    }
+    return v;
+}
+
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         const authHeader = request.headers.get("Authorization");
@@ -47,6 +57,8 @@ export default {
         if (request.method !== "POST") {
             return textResponse("Method Not Allowed", 405);
         }
+
+        const base64Encoding = request.headers.get("Upstash-Encoding") === "base64";
 
         let payload: unknown;
         try {
@@ -67,7 +79,8 @@ export default {
             if (cmd.length === 1 && cmd[0].toUpperCase() === "INIT") {
                 try {
                     await stub.init();
-                    return jsonResponse({ result: "OK" });
+                    const result = base64Encoding ? encodeResult("OK") : "OK";
+                    return jsonResponse({ result });
                 } catch (err) {
                     return jsonResponse({ error: errorMessage(err) });
                 }
@@ -91,7 +104,8 @@ export default {
 
             try {
                 const mapped = translation.mapResult(results);
-                return jsonResponse({ result: mapped });
+                const result = base64Encoding ? encodeResult(mapped) : mapped;
+                return jsonResponse({ result });
             } catch (err) {
                 return jsonResponse({ error: errorMessage(err) });
             }
@@ -131,7 +145,8 @@ export default {
             const translation = translations[i];
             const resultIndex = indexMap[i];
             try {
-                results[resultIndex] = translation.mapResult(pipelineResults[i] ?? []);
+                const mapped = translation.mapResult(pipelineResults[i] ?? []);
+                results[resultIndex] = base64Encoding ? encodeResult(mapped) : mapped;
             } catch (err) {
                 results[resultIndex] = { error: errorMessage(err) };
             }

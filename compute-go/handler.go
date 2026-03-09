@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -9,7 +10,24 @@ import (
 	"compute/translator"
 )
 
+func encodeResult(v any) any {
+	switch val := v.(type) {
+	case string:
+		return base64.StdEncoding.EncodeToString([]byte(val))
+	case []any:
+		out := make([]any, len(val))
+		for i, item := range val {
+			out[i] = encodeResult(item)
+		}
+		return out
+	default:
+		return val
+	}
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
+	base64Encoding := r.Header.Get("Upstash-Encoding") == "base64"
+
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -31,7 +49,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
 				return
 			}
-			json.NewEncoder(w).Encode(map[string]any{"result": "OK"})
+			result := any("OK")
+			if base64Encoding {
+				result = encodeResult(result)
+			}
+			json.NewEncoder(w).Encode(map[string]any{"result": result})
 			return
 		}
 
@@ -50,7 +72,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
 			return
 		}
-		json.NewEncoder(w).Encode(map[string]any{"result": mapped})
+		result := mapped
+		if base64Encoding {
+			result = encodeResult(result)
+		}
+		json.NewEncoder(w).Encode(map[string]any{"result": result})
 		return
 	}
 
@@ -87,6 +113,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			mapped, err := translation.MapResult(pipelineResults[i])
 			if err != nil {
 				results[indexMap[i]] = map[string]any{"error": err.Error()}
+				continue
+			}
+			if base64Encoding {
+				results[indexMap[i]] = encodeResult(mapped)
 				continue
 			}
 			results[indexMap[i]] = mapped
