@@ -1,6 +1,13 @@
-import type { ResultRow, Translation } from "./translator/types";
+import type { ResultRow, Statement, Translation } from "./translator/types";
 import { translate } from "./translator";
 import type { StorageDurableObject } from "./storage";
+
+type StorageStub = {
+    init(): Promise<void>;
+    execBatch(statements: Statement[]): Promise<ResultRow[][]>;
+    execPipeline(batches: Statement[][]): Promise<ResultRow[][][]>;
+    fetch(request: Request): Promise<Response>;
+};
 
 interface Env {
     STORAGE: DurableObjectNamespace<StorageDurableObject>;
@@ -74,7 +81,7 @@ export default {
         }
 
         const id = env.STORAGE.idFromName("global");
-        const stub = env.STORAGE.get(id);
+        const stub = env.STORAGE.get(id) as StorageStub;
 
         if (isStringArray(payload)) {
             const cmd = payload;
