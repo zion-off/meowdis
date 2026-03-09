@@ -1,4 +1,4 @@
-name: Deploy compute-go
+name: CI / Deploy compute-go
 
 on:
   workflow_dispatch:
@@ -7,9 +7,42 @@ on:
     paths:
       - 'compute-go/**'
       - '.github/workflows/deploy-compute-go.yml'
+  pull_request:
+    paths:
+      - 'compute-go/**'
+      - '.github/workflows/deploy-compute-go.yml'
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: compute-go/go.mod
+
+      - name: Vet
+        run: |
+          cd compute-go
+          go vet ./...
+
+      - name: Check formatting
+        run: |
+          cd compute-go
+          [ -z "$(gofmt -l .)" ] || (gofmt -l . && exit 1)
+
+      - name: Test
+        run: |
+          cd compute-go
+          go test ./... -v
+
   deploy:
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -18,8 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version-file: compute-go/go.mod
 

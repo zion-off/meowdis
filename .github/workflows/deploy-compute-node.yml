@@ -1,4 +1,4 @@
-name: Deploy compute-node
+name: CI / Deploy compute-node
 
 on:
   workflow_dispatch:
@@ -7,9 +7,46 @@ on:
     paths:
       - 'compute-node/**'
       - '.github/workflows/deploy-compute-node.yml'
+  pull_request:
+    paths:
+      - 'compute-node/**'
+      - '.github/workflows/deploy-compute-node.yml'
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.16.1'
+
+      - name: Install dependencies
+        run: |
+          cd compute-node
+          pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: |
+          cd compute-node
+          pnpm exec prettier --check src && pnpm exec eslint src --ext .ts --quiet
+
+      - name: Test
+        run: |
+          cd compute-node
+          pnpm run test
+
   deploy:
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read

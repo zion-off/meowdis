@@ -1,4 +1,4 @@
-name: Deploy durable-object
+name: CI / Deploy durable-object
 
 on:
   workflow_dispatch:
@@ -7,9 +7,46 @@ on:
     paths:
       - 'durable-object/**'
       - '.github/workflows/deploy-durable-object.yml'
+  pull_request:
+    paths:
+      - 'durable-object/**'
+      - '.github/workflows/deploy-durable-object.yml'
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.16.1'
+
+      - name: Install dependencies
+        run: |
+          cd durable-object
+          pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: |
+          cd durable-object
+          pnpm exec prettier --check src && pnpm exec eslint src --ext .ts --quiet
+
+      - name: Test
+        run: |
+          cd durable-object
+          pnpm run test
+
   deploy:
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
