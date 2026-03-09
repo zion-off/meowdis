@@ -1,6 +1,7 @@
 ## meowdis
 
-a free, serverless, self-hostable redis clone backed by cloudflare durable objects. drop-in replacement for upstash redis.
+a free, serverless, self-hostable redis clone backed by cloudflare durable
+objects. drop-in replacement for upstash redis.
 
 ### features
 
@@ -23,31 +24,66 @@ a free, serverless, self-hostable redis clone backed by cloudflare durable objec
 
 ### how it works (basically)
 
-- a compute service (compute-node or compute-go) exposes a POST endpoint
+- a compute layer exposes a POST endpoint
 - accepts upstash redis commands in the request body
 - translates the command into sqlite queries
-- forwards the queries to the storage service, a durable object instance
-- durable object executes the queries against its sqlite database and returns the result
-- compute service returns the result to the client
+- forwards the queries to the storage layer, a durable object instance
+- durable object executes the queries against its sqlite database and returns
+  the result
+- compute layer returns the result to the client
 
 ### setup
+
+#### deploy with one click (recommended)
+
+set `AUTH_TOKEN` to a random secret string when prompted — generate one at
+[jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=meowdis)
+
+then initialise the database:
+
+```bash
+curl https://your-endpoint \
+  -H "Authorization: Bearer your-token" \
+  -d '["INIT"]'
+```
+
+verify it's working:
+
+```bash
+curl https://your-endpoint \
+  -H "Authorization: Bearer your-token" \
+  -d '["PING"]'                       # {"result":"PONG"}
+```
+
+#### deploy storage and compute separately
 
 **1.** deploy the storage layer
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=durable-object)
 
-**2.** deploy the compute layer -- set the following secret when prompted
+**2.** deploy the compute layer
 
-| secret       | description                                                                                               |
-| ------------ | --------------------------------------------------------------------------------------------------------- |
-| `AUTH_TOKEN` | a random secret string -- generate one at [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/) |
+**option a — cloudflare worker** (compute-node)
+
+set `AUTH_TOKEN` when prompted — generate one at
+[jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/)
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=compute-node)
+
+**option b — aws lambda** (compute-go)
+
+| variable           | description                                                                                               |
+| ------------------ | --------------------------------------------------------------------------------------------------------- |
+| `AUTH_TOKEN`       | a random secret string -- generate one at [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/) |
+| `STORAGE_ENDPOINT` | url of your deployed durable object worker                                                                |
+| `STORAGE_TOKEN`    | the `AUTH_TOKEN` value you chose                                                                          |
 
 **3.** initialise the database
 
 ```bash
-curl https://your-compute-endpoint \
+curl https://your-endpoint \
   -H "Authorization: Bearer your-token" \
   -d '["INIT"]'
 ```
@@ -55,18 +91,10 @@ curl https://your-compute-endpoint \
 **4.** verify it's working
 
 ```bash
-curl https://your-compute-endpoint \
+curl https://your-endpoint \
   -H "Authorization: Bearer your-token" \
   -d '["PING"]'                       # {"result":"PONG"}
 ```
-
-> **prefer go?** skip step 2 and deploy `compute-go` to aws lambda instead. configure these environment variables:
->
-> | variable           | description                                                                                               |
-> | ------------------ | --------------------------------------------------------------------------------------------------------- |
-> | `AUTH_TOKEN`       | a random secret string -- generate one at [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/) |
-> | `STORAGE_ENDPOINT` | url of your deployed durable object worker                                                                |
-> | `STORAGE_TOKEN`    | the `AUTH_TOKEN` value you chose                                                                          |
 
 ### usage examples
 

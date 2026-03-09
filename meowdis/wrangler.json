@@ -1,0 +1,9 @@
+{
+  "name": "meowdis",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "durable_objects": {
+    "bindings": [{ "name": "STORAGE", "class_name": "StorageDurableObject" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["StorageDurableObject"] }]
+}
