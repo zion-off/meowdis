@@ -55,7 +55,7 @@ set `AUTH_TOKEN` to a random secret string when prompted — generate one at
 then initialise the database:
 
 ```bash
-curl https://your-endpoint \
+curl https://meowdis.example.workers.dev \
   -H "Authorization: Bearer your-token" \
   -d '["INIT"]'
 ```
@@ -63,7 +63,7 @@ curl https://your-endpoint \
 verify it's working:
 
 ```bash
-curl https://your-endpoint \
+curl https://meowdis.example.workers.dev \
   -H "Authorization: Bearer your-token" \
   -d '["PING"]'                       # {"result":"PONG"}
 ```
@@ -75,7 +75,7 @@ curl https://your-endpoint \
 ```python
 from upstash_redis import Redis
 
-redis = Redis(url="https://compute-endpoint", token="your-token")
+redis = Redis(url="https://meowdis.example.workers.dev", token="your-token")
 
 redis.ping()                          # 'PONG'
 redis.set("name", "clairo")           # 'OK'
@@ -88,7 +88,7 @@ redis.get("name")                     # 'clairo'
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
-  url: "https://compute-endpoint",
+  url: "https://meowdis.example.workers.dev",
   token: "your-token",
 });
 
@@ -101,15 +101,15 @@ await redis.get("name"); // 'clairo'
 [upstash rest api docs](https://upstash.com/docs/redis/features/restapi))
 
 ```bash
-curl https://compute-endpoint \
+curl https://meowdis.example.workers.dev \
   -H "Authorization: Bearer your-token" \
   -d '["PING"]'                       # {"result":"PONG"}
 
-curl https://compute-endpoint \
+curl https://meowdis.example.workers.dev \
   -H "Authorization: Bearer your-token" \
   -d '["SET", "name", "clairo"]'      # {"result":"OK"}
 
-curl https://compute-endpoint \
+curl https://meowdis.example.workers.dev \
   -H "Authorization: Bearer your-token" \
   -d '["GET", "name"]'                # {"result":"clairo"}
 ```

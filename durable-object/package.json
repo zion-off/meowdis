@@ -8,6 +8,13 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write src"
   },
+  "cloudflare": {
+    "bindings": {
+      "STORAGE_SECRET": {
+        "description": "Secret used to authenticate requests between the compute service and the durable object. Optional if you're deploying both to Cloudflare."
+      }
+    }
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.0.0",
     "typescript": "^5.0.0",

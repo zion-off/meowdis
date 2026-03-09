@@ -8,6 +8,13 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write src"
   },
+  "cloudflare": {
+    "bindings": {
+      "AUTH_TOKEN": {
+        "description": "Bearer token for making authenticated requests to meowdis. Generate one at [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/)."
+      }
+    }
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.0.0",
     "typescript": "^5.0.0",
