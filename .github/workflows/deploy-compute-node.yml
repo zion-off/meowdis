@@ -1,0 +1,48 @@
+name: Deploy compute-node
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'compute-node/**'
+      - '.github/workflows/deploy-compute-node.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.16.1'
+
+      - name: Install dependencies
+        run: |
+          cd compute-node
+          pnpm install --frozen-lockfile
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd compute-node
+          pnpm run deploy
+
+      - name: Set worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          AUTH_TOKEN: ${{ secrets.CLOUDFLARE_COMPUTE_NODE_AUTH_TOKEN }}
+        run: |
+          cd compute-node
+          echo "$AUTH_TOKEN" | pnpm wrangler secret put AUTH_TOKEN

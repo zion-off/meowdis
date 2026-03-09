@@ -1,5 +1,8 @@
 # macos
 .DS_Store
 
-# nodee
+# node
 node_modules/
+
+# debug
+playground/
