@@ -32,7 +32,7 @@ export class StorageDurableObject extends DurableObject {
         params: [],
       },
       {
-        sql: "CREATE TABLE IF NOT EXISTS lists (key TEXT NOT NULL REFERENCES keys(key) ON DELETE CASCADE, \"index\" REAL NOT NULL, value TEXT NOT NULL, PRIMARY KEY (key, \"index\"))",
+        sql: 'CREATE TABLE IF NOT EXISTS lists (key TEXT NOT NULL REFERENCES keys(key) ON DELETE CASCADE, "index" REAL NOT NULL, value TEXT NOT NULL, PRIMARY KEY (key, "index"))',
         params: [],
       },
       {

@@ -1,6 +1,6 @@
 ## meowdis
 
-a free, serverless, self-hostable redis clone backed by cloudflare durable
+a free, serverless redis clone backed by cloudflare durable
 objects. drop-in replacement for upstash redis.
 
 ### features
@@ -13,14 +13,14 @@ objects. drop-in replacement for upstash redis.
 
 ### supported [redis 8.2](https://redis.io/docs/latest/commands/redis-8-2-commands/) commands
 
-| category | commands                                                                            |
-| -------- | ----------------------------------------------------------------------------------- |
+| category | commands                                                                          |
+| -------- | --------------------------------------------------------------------------------- |
 | strings  | `GET`, `SET`, `DEL`, `EXISTS`, `INCR`, `INCRBY`, `DECR`, `DECRBY`, `MGET`, `MSET` |
-| expiry   | `EXPIRE`, `EXPIREAT`, `TTL`, `PTTL`, `PERSIST`                                     |
-| hashes   | `HGET`, `HSET`, `HDEL`, `HGETALL`, `HEXISTS`, `HKEYS`, `HVALS`                     |
-| lists    | `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LRANGE`, `LLEN`                                 |
-| sets     | `SADD`, `SREM`, `SMEMBERS`, `SISMEMBER`, `SCARD`                                   |
-| utility  | `PING`, `DBSIZE`, `FLUSHDB`, `KEYS`                                                 |
+| expiry   | `EXPIRE`, `EXPIREAT`, `TTL`, `PTTL`, `PERSIST`                                    |
+| hashes   | `HGET`, `HSET`, `HDEL`, `HGETALL`, `HEXISTS`, `HKEYS`, `HVALS`                    |
+| lists    | `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LRANGE`, `LLEN`                                |
+| sets     | `SADD`, `SREM`, `SMEMBERS`, `SISMEMBER`, `SCARD`                                  |
+| utility  | `PING`, `DBSIZE`, `FLUSHDB`, `KEYS`                                               |
 
 `SET` options: `NX`, `XX`, `GET`, `EX`, `PX`, `EXAT`, `PXAT`, `KEEPTTL`
 
@@ -48,6 +48,7 @@ set `AUTH_TOKEN` to a random secret string when prompted — generate one at
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=meowdis)
 
 > **tip:** for lower latency, set a [location hint](https://developers.cloudflare.com/durable-objects/reference/data-location/#provide-a-location-hint) in `meowdis/src/index.ts` before deploying to pin the durable object to a region close to your users:
+>
 > ```ts
 > const stub = env.STORAGE.get(id, { locationHint: "apac" });
 > ```
