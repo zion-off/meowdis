@@ -35,7 +35,7 @@ function errorMessage(err: unknown): string {
 
 function encodeResult(v: unknown): unknown {
     if (typeof v === "string") {
-        return btoa(unescape(encodeURIComponent(v)));
+        return btoa(String.fromCharCode(...new TextEncoder().encode(v)));
     }
     if (Array.isArray(v)) {
         return v.map(encodeResult);
