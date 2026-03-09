@@ -13,14 +13,20 @@ objects. drop-in replacement for upstash redis.
 
 ### supported [redis 8.2](https://redis.io/docs/latest/commands/redis-8-2-commands/) commands
 
-| category | commands                                                                          |
-| -------- | --------------------------------------------------------------------------------- |
+| category | commands                                                                            |
+| -------- | ----------------------------------------------------------------------------------- |
 | strings  | `GET`, `SET`, `DEL`, `EXISTS`, `INCR`, `INCRBY`, `DECR`, `DECRBY`, `MGET`, `MSET` |
-| expiry   | `EXPIRE`, `EXPIREAT`, `TTL`, `PTTL`, `PERSIST`                                    |
-| hashes   | `HGET`, `HSET`, `HDEL`, `HGETALL`, `HEXISTS`, `HKEYS`, `HVALS`                    |
-| lists    | `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LRANGE`, `LLEN`                                |
-| sets     | `SADD`, `SREM`, `SMEMBERS`, `SISMEMBER`, `SCARD`                                  |
-| utility  | `PING`, `DBSIZE`, `FLUSHDB`, `KEYS`                                               |
+| expiry   | `EXPIRE`, `EXPIREAT`, `TTL`, `PTTL`, `PERSIST`                                     |
+| hashes   | `HGET`, `HSET`, `HDEL`, `HGETALL`, `HEXISTS`, `HKEYS`, `HVALS`                     |
+| lists    | `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LRANGE`, `LLEN`                                 |
+| sets     | `SADD`, `SREM`, `SMEMBERS`, `SISMEMBER`, `SCARD`                                   |
+| utility  | `PING`, `DBSIZE`, `FLUSHDB`, `KEYS`                                                 |
+
+`SET` options: `NX`, `XX`, `GET`, `EX`, `PX`, `EXAT`, `PXAT`, `KEEPTTL`
+
+`EXPIRE` / `EXPIREAT` options: `NX`, `XX`, `GT`, `LT`
+
+`LPOP` / `RPOP` options: `count`
 
 ### how it works (basically)
 
