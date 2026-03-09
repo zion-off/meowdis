@@ -111,15 +111,15 @@ function translatePop(args: string[], cmd: string, left: boolean): Translation {
     if (hasCount) {
         const order = left ? "ASC" : "DESC";
         popSQL =
-            `DELETE FROM lists WHERE key = ? AND index IN (SELECT index FROM lists WHERE key = ? ORDER BY index ${order} LIMIT ?) RETURNING index, value`;
+            `DELETE FROM lists WHERE key = ? AND "index" IN (SELECT "index" FROM lists WHERE key = ? ORDER BY "index" ${order} LIMIT ?) RETURNING "index", value`;
         popParams = [key, key, count];
     } else if (left) {
         popSQL =
-            "DELETE FROM lists WHERE key = ? AND index = (SELECT MIN(index) FROM lists WHERE key = ?) RETURNING index, value";
+            "DELETE FROM lists WHERE key = ? AND \"index\" = (SELECT MIN(\"index\") FROM lists WHERE key = ?) RETURNING \"index\", value";
         popParams = [key, key];
     } else {
         popSQL =
-            "DELETE FROM lists WHERE key = ? AND index = (SELECT MAX(index) FROM lists WHERE key = ?) RETURNING index, value";
+            "DELETE FROM lists WHERE key = ? AND \"index\" = (SELECT MAX(\"index\") FROM lists WHERE key = ?) RETURNING \"index\", value";
         popParams = [key, key];
     }
 

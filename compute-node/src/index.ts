@@ -18,12 +18,19 @@ function textResponse(body: string, status: number): Response {
     return new Response(body, { status, headers: { "Content-Type": "text/plain" } });
 }
 
-function isStringArray(value: unknown): value is string[] {
-    return Array.isArray(value) && value.every((item) => typeof item === "string");
+function isStringArray(value: unknown): value is (string | number)[] {
+    return (
+        Array.isArray(value) &&
+        value.every((item) => typeof item === "string" || typeof item === "number")
+    );
 }
 
-function isStringArrayArray(value: unknown): value is string[][] {
+function isStringArrayArray(value: unknown): value is (string | number)[][] {
     return Array.isArray(value) && value.every((item) => isStringArray(item));
+}
+
+function normalizeStringArray(values: (string | number)[]): string[] {
+    return values.map((item) => (typeof item === "number" ? String(item) : item));
 }
 
 function errorMessage(err: unknown): string {
@@ -75,7 +82,7 @@ export default {
         const stub = env.STORAGE.get(id) as DurableObjectStub & StorageRPC;
 
         if (isStringArray(payload)) {
-            const cmd = payload;
+            const cmd = normalizeStringArray(payload);
             if (cmd.length === 1 && cmd[0].toUpperCase() === "INIT") {
                 try {
                     await stub.init();
@@ -115,7 +122,7 @@ export default {
             return jsonResponse({ error: "ERR invalid request body" });
         }
 
-        const pipeline = payload;
+        const pipeline = payload.map((cmd) => normalizeStringArray(cmd));
         const results: unknown[] = new Array(pipeline.length);
         const translations: Translation[] = [];
         const indexMap: number[] = [];

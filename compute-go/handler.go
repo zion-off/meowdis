@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -25,6 +27,34 @@ func encodeResult(v any) any {
 	}
 }
 
+func decodeJSON(body []byte, target any) error {
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.UseNumber()
+	return decoder.Decode(target)
+}
+
+func coerceStringSlice(values []any) ([]string, bool) {
+	if len(values) == 0 {
+		return []string{}, true
+	}
+
+	result := make([]string, len(values))
+	for i, value := range values {
+		switch v := value.(type) {
+		case string:
+			result[i] = v
+		case json.Number:
+			result[i] = v.String()
+		case float64:
+			result[i] = fmt.Sprintf("%v", v)
+		default:
+			return nil, false
+		}
+	}
+
+	return result, true
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	base64Encoding := r.Header.Get("Upstash-Encoding") == "base64"
 
@@ -41,8 +71,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var single []string
-	if err := json.Unmarshal(body, &single); err == nil {
+	var singleRaw []any
+	if err := decodeJSON(body, &singleRaw); err == nil {
+		single, ok := coerceStringSlice(singleRaw)
+		if !ok {
+			goto pipelineCheck
+		}
 		if len(single) == 1 && strings.ToUpper(single[0]) == "INIT" {
 			_, err := storagePost(map[string]any{"init": true})
 			if err != nil {
@@ -80,8 +114,22 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var pipeline [][]string
-	if err := json.Unmarshal(body, &pipeline); err == nil {
+pipelineCheck:
+
+	var pipelineRaw [][]any
+	if err := decodeJSON(body, &pipelineRaw); err == nil {
+		pipeline := make([][]string, len(pipelineRaw))
+		for i, cmdRaw := range pipelineRaw {
+			cmd, ok := coerceStringSlice(cmdRaw)
+			if !ok {
+				pipeline = nil
+				break
+			}
+			pipeline[i] = cmd
+		}
+		if pipeline == nil {
+			goto invalidBody
+		}
 		results := make([]any, len(pipeline))
 		translations := make([]translator.Translation, 0, len(pipeline))
 		indexMap := make([]int, 0, len(pipeline))
@@ -126,5 +174,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+invalidBody:
 	json.NewEncoder(w).Encode(map[string]any{"error": "ERR invalid request body"})
 }
