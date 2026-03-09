@@ -62,45 +62,6 @@ curl https://your-endpoint \
   -d '["PING"]'                       # {"result":"PONG"}
 ```
 
-#### deploy storage and compute separately
-
-**1.** deploy the storage layer
-
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=durable-object)
-
-**2.** deploy the compute layer
-
-**option a — cloudflare worker** (compute-node)
-
-set `AUTH_TOKEN` when prompted — generate one at
-[jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/)
-
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=compute-node)
-
-**option b — aws lambda** (compute-go)
-
-| variable           | description                                                                                               |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `AUTH_TOKEN`       | a random secret string -- generate one at [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/) |
-| `STORAGE_ENDPOINT` | url of your deployed durable object worker                                                                |
-| `STORAGE_TOKEN`    | the `AUTH_TOKEN` value you chose                                                                          |
-
-**3.** initialise the database
-
-```bash
-curl https://your-endpoint \
-  -H "Authorization: Bearer your-token" \
-  -d '["INIT"]'
-```
-
-**4.** verify it's working
-
-```bash
-curl https://your-endpoint \
-  -H "Authorization: Bearer your-token" \
-  -d '["PING"]'                       # {"result":"PONG"}
-```
-
 ### usage examples
 
 **python**
@@ -145,4 +106,50 @@ curl https://compute-endpoint \
 curl https://compute-endpoint \
   -H "Authorization: Bearer your-token" \
   -d '["GET", "name"]'                # {"result":"clairo"}
+```
+
+### alternate setup
+
+#### deploy storage and compute separately
+
+**1.** deploy the storage layer
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=durable-object)
+
+| variable         | description                                                                                               |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `STORAGE_SECRET` | a random secret string -- generate one at [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/) |
+
+**2.** deploy the compute layer
+
+**option a — cloudflare worker** (compute-node)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zion-off/meowdis&dir=compute-node)
+
+| variable     | description                                                                                               |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| `AUTH_TOKEN` | a random secret string -- generate one at [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/) |
+
+**option b — aws lambda** (compute-go)
+
+| variable           | description                                                                                               |
+| ------------------ | --------------------------------------------------------------------------------------------------------- |
+| `AUTH_TOKEN`       | a random secret string -- generate one at [jwtsecretkeygenerator.com](https://jwtsecretkeygenerator.com/) |
+| `STORAGE_ENDPOINT` | url of your deployed durable object worker                                                                |
+| `STORAGE_TOKEN`    | the `STORAGE_SECRET` you set on the storage layer                                                         |
+
+**3.** initialise the database
+
+```bash
+curl https://your-compute-endpoint \
+  -H "Authorization: Bearer your-token" \
+  -d '["INIT"]'
+```
+
+**4.** verify it's working
+
+```bash
+curl https://your-compute-endpoint \
+  -H "Authorization: Bearer your-token" \
+  -d '["PING"]'                       # {"result":"PONG"}
 ```
